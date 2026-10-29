@@ -19,10 +19,13 @@
     "@koa/cors": "^5.0.0",
     "@koa/router": "^15.7.0",
     "better-sqlite3": "^13.0.3",
+    "iconv-lite": "^0.7.3",
     "jsonwebtoken": "^9.0.3",
     "koa": "^3.2.1",
     "log4js": "6.9.1",
     "message2call": "^2.0.3",
+    "music-metadata": "^12.3.2",
+    "node-id3": "^0.2.9",
     "ws": "^8.22.0"
   },
   "devDependencies": {

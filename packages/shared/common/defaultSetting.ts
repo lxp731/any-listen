@@ -131,6 +131,15 @@ const defaultSetting: AnyListen.AppSetting = {
 
   'download.savePath': '',
   'download.fileName': '%name% - %singer%',
+  'download.enable': true,
+  'download.quality': '320k',
+  'download.maxDownloadNum': 3,
+  'download.isDownloadLrc': true,
+  'download.lrcFormat': 'utf8',
+  'download.isEmbedLyric': true,
+  'download.isEmbedPic': true,
+  'download.skipExistFile': true,
+  'download.acceptFallbackQuality': true,
 
   'onlineResource.enable': false,
   'onlineResource.tipSearchSource': '',
