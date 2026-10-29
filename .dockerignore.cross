@@ -1,0 +1,5 @@
+*
+!build
+!build/**
+!.native-cross
+!.native-cross/**
