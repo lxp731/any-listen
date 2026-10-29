@@ -135,6 +135,13 @@ export const runDownloadTask = async (
         task.filePath = existPath
         task.status = DOWNLOAD_STATUS.COMPLETED
         task.statusText = '已存在，跳过下载'
+        // 顺便探测已有文件的真实音质，避免列表里显示成"未知"
+        const probe = await probeAudioFile(existPath, true)
+        if (probe) {
+          task.actualBitrate = probe.bitrate
+          task.actualQuality = `${probe.codec || probe.container} ${probe.bitrate}k`.trim()
+          task.qualityFallback = isQualityFallback(quality, probe)
+        }
         onStatusText(task.statusText)
         return
       }
