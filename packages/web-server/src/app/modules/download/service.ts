@@ -109,7 +109,7 @@ export const runDownloadTask = async (
 ) => {
   const setting = appState.appSetting
 
-  if (!savePath) throw new Error('download.savePath is empty')
+  if (!savePath) throw new Error('download.savePath is empty (请在设置里填写允许访问的目录)')
   const pathError = checkAllowPathError(savePath)
   if (pathError) throw new Error(`save path not allowed: ${savePath}`)
 

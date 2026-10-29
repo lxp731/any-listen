@@ -4,6 +4,7 @@ import { musicSearch } from '@any-listen/app/modules/resources'
 import { getExtSource } from '@any-listen/app/modules/resources/utils'
 
 import { appState } from '@/app/app'
+import defaultSetting from '@/app/shared/defaultSetting'
 import { workers } from '@/app/worker'
 
 import { probeAudioFile } from './probe'
@@ -153,8 +154,12 @@ export const addDownloadTask = async (
 ) => {
   if (!appState.appSetting['download.enable']) throw new Error('download is disabled (download.enable=false)')
   const quality = options.quality ?? appState.appSetting['download.quality']
-  const savePath = options.savePath ?? appState.appSetting['download.savePath']
-  if (!savePath) throw new Error('download.savePath is empty')
+  // 旧安装里 download.savePath 可能被存成空字符串，此时回落到默认目录
+  const savePath =
+    options.savePath ||
+    appState.appSetting['download.savePath'] ||
+    defaultSetting['download.savePath'] ||
+    '/music'
 
   let musicInfo = params.musicInfo ?? null
   if (!musicInfo) {
