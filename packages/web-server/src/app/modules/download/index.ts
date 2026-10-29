@@ -150,6 +150,7 @@ export const addDownloadTask = async (
   },
   options: DownloadOptions = {}
 ) => {
+  if (!appState.appSetting['download.enable']) throw new Error('download is disabled (download.enable=false)')
   const quality = options.quality ?? appState.appSetting['download.quality']
   const savePath = options.savePath ?? appState.appSetting['download.savePath']
   if (!savePath) throw new Error('download.savePath is empty')
