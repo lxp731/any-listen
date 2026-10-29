@@ -43,7 +43,8 @@ type ServerAllActions = AnyListen.IPC.ServerCommonActions &
   AnyListen.IPCExtension.ServerActions &
   AnyListen.IPCDesktopLyric.ServerActions &
   AnyListen.IPCSoundEffect.ServerActions &
-  AnyListen.IPCSync.ServerActions
+  AnyListen.IPCSync.ServerActions &
+  AnyListen.IPCDownload.ServerActions
 
 declare global {
   namespace AnyListen {

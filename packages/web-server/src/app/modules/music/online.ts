@@ -1,3 +1,4 @@
+import { pickQuality } from '@any-listen/app/modules/resources/utils'
 import {
   getMusicLyricByExtensionSource,
   getMusicLyric as getMusicLyricResource,
@@ -26,7 +27,8 @@ export const getMusicUrlByExtSource = async ({
   isRefresh?: boolean
   quality?: string
 }): Promise<AnyListen.IPCMusic.MusicUrlInfo> => {
-  const targetQuality = quality ?? appState.appSetting['player.playQuality']
+  // 按本曲真实可用音质降级，避免请求一个音源根本没有的档位（回落后再被当成原档）
+  const targetQuality = pickQuality(musicInfo, quality ?? appState.appSetting['player.playQuality'])
   const cachedUrl = await workers.dbService.getMusicUrl(buildMusicCacheId(musicInfo, targetQuality))
   if (cachedUrl && !isRefresh) return { isFromCache: true, quality: targetQuality, url: cachedUrl }
   const info = await getMusicUrlByExtensionSource({
@@ -52,7 +54,7 @@ export const getMusicUrl = async ({
   isRefresh?: boolean
   quality?: string
 }): Promise<AnyListen.IPCMusic.MusicUrlInfo> => {
-  const targetQuality = quality ?? appState.appSetting['player.playQuality']
+  const targetQuality = pickQuality(musicInfo, quality ?? appState.appSetting['player.playQuality'])
   const id = buildMusicCacheId(musicInfo, targetQuality)
   const cachedUrl = await workers.dbService.getMusicUrl(id)
   if (cachedUrl && !isRefresh) return { isFromCache: true, quality: targetQuality, url: cachedUrl }

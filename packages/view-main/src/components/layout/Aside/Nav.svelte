@@ -6,6 +6,7 @@
   import { useExtensionError, useExtensionNewVersionNum } from '@/modules/extension/reactive.svelte'
   import { useOnlineResourceAvailable } from '@/views/Online/shared.svelte'
   import { toOnlineSearch } from '@/modules/resource/actions'
+  import { useSettingValue } from '@/modules/setting/reactive.svelte'
 
   const lastPlayedUrl = `/library?id=${LIST_IDS.LAST_PLAYED}`
 
@@ -13,6 +14,7 @@
   const extensionError = useExtensionError()
 
   let onlineResourceAvailable = useOnlineResourceAvailable()
+  const downloadEnable = useSettingValue('download.enable')
 
   let menus = $derived(
     [
@@ -63,14 +65,13 @@
         iconSize: '0 0 24 24',
         enable: true,
       },
-      // {
-      //   to: '/download',
-      //   name: $t('download'),
-      //   icon: '#icon-download-2',
-      //   iconSize: '0 0 425.2 425.2',
-      //   // enable: appSetting['download.enable'],
-      //   enable: true,
-      // },
+      {
+        to: '/download',
+        name: $t('download'),
+        icon: '#icon-download',
+        iconSize: '0 0 475.078 475.077',
+        enable: downloadEnable.val,
+      },
       {
         to: '/settings',
         name: $t('setting'),

@@ -372,6 +372,83 @@ export const settings: SettingListSection[] = [
     ],
   },
   {
+    id: 'download',
+    name: 'settings.download',
+    list: [
+      {
+        field: 'download.enable',
+        name: 'settings.download.enable',
+        description: 'settings.download.enable_desc',
+        type: 'boolean',
+      },
+      {
+        field: 'download.savePath',
+        name: 'settings.download.save_path',
+        description: 'settings.download.save_path_desc',
+        type: 'input',
+      },
+      {
+        field: 'download.quality',
+        name: 'settings.download.quality',
+        description: 'settings.download.quality_desc',
+        type: 'selection',
+        enum: [
+          { name: i18n.t('settings.download.quality_128k') as never, value: '128k' },
+          { name: i18n.t('settings.download.quality_192k') as never, value: '192k' },
+          { name: i18n.t('settings.download.quality_320k') as never, value: '320k' },
+          { name: i18n.t('settings.download.quality_flac') as never, value: 'flac' },
+          { name: i18n.t('settings.download.quality_flac24bit') as never, value: 'flac24bit' },
+        ],
+      },
+      {
+        field: 'download.maxDownloadNum',
+        name: 'settings.download.max_num',
+        description: 'settings.download.max_num_desc',
+        type: 'selection',
+        enum: [1, 2, 3, 4, 5].map((num) => ({ name: String(num) as never, value: num })),
+      },
+      {
+        field: 'download.isDownloadLrc',
+        name: 'settings.download.download_lrc',
+        description: 'settings.download.download_lrc_desc',
+        type: 'boolean',
+      },
+      {
+        field: 'download.lrcFormat',
+        name: 'settings.download.lrc_format',
+        type: 'selection',
+        enum: [
+          { name: i18n.t('settings.download.lrc_format_utf8') as never, value: 'utf8' },
+          { name: i18n.t('settings.download.lrc_format_gbk') as never, value: 'gbk' },
+        ],
+      },
+      {
+        field: 'download.isEmbedLyric',
+        name: 'settings.download.embed_lrc',
+        description: 'settings.download.embed_lrc_desc',
+        type: 'boolean',
+      },
+      {
+        field: 'download.isEmbedPic',
+        name: 'settings.download.embed_pic',
+        description: 'settings.download.embed_pic_desc',
+        type: 'boolean',
+      },
+      {
+        field: 'download.skipExistFile',
+        name: 'settings.download.skip_exist',
+        description: 'settings.download.skip_exist_desc',
+        type: 'boolean',
+      },
+      {
+        field: 'download.acceptFallbackQuality',
+        name: 'settings.download.accept_fallback',
+        description: 'settings.download.accept_fallback_desc',
+        type: 'boolean',
+      },
+    ],
+  },
+  {
     id: 'network',
     // t('settings.network.proxy_all_resources_desc')
     name: 'settings.network',

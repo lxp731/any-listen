@@ -7,6 +7,7 @@ import { appLog } from '@/shared/log4js'
 import { createExposeApp, createServerApp } from './app'
 import { createExposeData } from './data'
 import { createExposeDislike, createServerDislike } from './dislike'
+import { createExposeDownload } from './download'
 import { createExposeExtension, createServerExtension } from './extension'
 import { createExposeHotkey, createServerHotkey } from './hotkey'
 import { createExposeList, createServerList } from './list'
@@ -62,6 +63,7 @@ export const init = () => {
     ...createExposeExtension(),
     ...createExposeSoundEffect(),
     ...createExposeSync(),
+    ...createExposeDownload(),
   }
 
   socketEvent.on('new_socket', (socket) => {

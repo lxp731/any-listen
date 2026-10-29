@@ -2,18 +2,16 @@
   import Badge from '@/components/base/Badge.svelte'
   import Image from '@/components/base/Image.svelte'
 
-  // import SvgIcon from '@/components/base/SvgIcon.svelte'
   import type { MouseEventHandler } from 'svelte/elements'
   import { fade } from 'svelte/transition'
   import { buildSourceLabel } from '@any-listen/common/tools'
   import { onMount, tick } from 'svelte'
   import { getMusicPicDelay } from '@/modules/player/store/actions'
-  import Btn from '@/components/base/Btn.svelte'
-  import SvgIcon from '@/components/base/SvgIcon.svelte'
   import { t } from '@/plugins/i18n'
   import { useSettingValue } from '@/modules/setting/reactive.svelte'
   import MusicHeartBtn from '@/components/common/MusicHeartBtn.svelte'
   import { LIST_IDS } from '@any-listen/common/constants'
+  import { showDownloadModal } from '@/components/common/DownloadModal'
   // console.log(querystring)
   let {
     musicinfo,
@@ -47,6 +45,7 @@
   let picUrl = $state<null | string>(null)
   let hovered = $state(false)
   let isShowActionBtn = useSettingValue('list.isShowActionBtn')
+  const downloadEnable = useSettingValue('download.enable')
   // let isPlaying = $derived(isplaylist && $playInfo.index === index)
   const badgeTypes = ['primary', 'secondary', 'tertiary'] as const
 
@@ -127,23 +126,6 @@
     </div>
     {#if isShowActionBtn.val}
       <div class="name-right">
-        {#if hovered}
-          <div class="auto-hide-btns" transition:fade={{ duration: 200 }}>
-            <Btn
-              onclick={(evt) => {
-                evt.stopPropagation()
-                onplay?.()
-              }}
-              min
-              icon
-              outline
-              aria-label={$t('player__play')}
-              class={['play-btn']}
-            >
-              <SvgIcon name="play" />
-            </Btn>
-          </div>
-        {/if}
         {#if listid !== LIST_IDS.LOVE}
           <MusicHeartBtn {musicinfo} min />
         {/if}
@@ -158,6 +140,38 @@
   </div>
   <div class="list-item-cell" style="flex: 0 0 9%;">
     <span class="no-select">{musicinfo.interval || '--/--'}</span>
+  </div>
+  <div class="list-item-cell action-cell">
+    <button
+      class="action-btn"
+      type="button"
+      aria-label={$t('player__play')}
+      title={$t('player__play')}
+      onclick={(evt) => {
+        evt.stopPropagation()
+        onplay?.()
+      }}
+    >
+      <svg version="1.1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 287.386 287.386">
+        <use xlink:href="#icon-testPlay" />
+      </svg>
+    </button>
+    {#if !musicinfo.isLocal && downloadEnable.val}
+      <button
+        class="action-btn"
+        type="button"
+        aria-label={$t('user_list_music_menu__download')}
+        title={$t('user_list_music_menu__download')}
+        onclick={(evt) => {
+          evt.stopPropagation()
+          void showDownloadModal([musicinfo])
+        }}
+      >
+        <svg version="1.1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 475.078 475.077">
+          <use xlink:href="#icon-download" />
+        </svg>
+      </button>
+    {/if}
   </div>
 </div>
 
@@ -197,6 +211,48 @@
       border-color: var(--color-primary-alpha-700);
     }
   }
+  .action-cell {
+    display: flex;
+    flex: 0 0 66px;
+    gap: 2px;
+    align-items: center;
+    justify-content: flex-end;
+
+    .action-btn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 4px 6px;
+      font-size: 15px;
+      line-height: 0;
+      color: var(--color-font-label);
+      cursor: pointer;
+      background-color: transparent;
+      border: none;
+      border-radius: @radius-border;
+      opacity: 0.75;
+      transition: @transition-fast;
+      transition-property: background-color, color, opacity;
+
+      svg {
+        width: 15px;
+        height: 15px;
+      }
+
+      &:hover {
+        color: var(--color-font);
+        background-color: var(--color-primary-light-400-alpha-900);
+        opacity: 1;
+      }
+      &:active {
+        background-color: var(--color-primary-light-300-alpha-900);
+      }
+    }
+  }
+  .container:hover .action-cell .action-btn {
+    opacity: 1;
+  }
+
   // .active {
   //   background-color: var(--color-primary-background);
   // }

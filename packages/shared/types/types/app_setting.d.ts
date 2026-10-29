@@ -562,6 +562,51 @@ declare global {
       'download.fileName': '%name% - %singer%' | '%singer% - %name%' | '%name%'
 
       /**
+       * 是否启用服务端下载
+       */
+      'download.enable': boolean
+
+      /**
+       * 下载音质
+       */
+      'download.quality': '128k' | '192k' | '320k' | 'wav' | 'flac' | 'flac24bit'
+
+      /**
+       * 最大同时下载数
+       */
+      'download.maxDownloadNum': number
+
+      /**
+       * 是否下载 .lrc 歌词文件
+       */
+      'download.isDownloadLrc': boolean
+
+      /**
+       * 歌词文件编码
+       */
+      'download.lrcFormat': 'utf8' | 'gbk'
+
+      /**
+       * 是否把歌词写入音频标签
+       */
+      'download.isEmbedLyric': boolean
+
+      /**
+       * 是否把封面写入音频标签
+       */
+      'download.isEmbedPic': boolean
+
+      /**
+       * 目标文件已存在时跳过
+       */
+      'download.skipExistFile': boolean
+
+      /**
+       * 接受音源回落音质（实测常回落 128k）
+       */
+      'download.acceptFallbackQuality': boolean
+
+      /**
        * 是否启用在线资源板块
        */
       'onlineResource.enable': boolean
