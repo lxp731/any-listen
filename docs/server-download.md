@@ -180,3 +180,40 @@ packages/web-server/package.json                     新增 node-id3 / iconv-lit
 
 `web-server/src/app/modules/music/online.ts` 的 `getMusicUrl` / `getMusicUrlByExtSource` 也套用 `pickQuality`：
 设置里选 flac、而本曲只有 320k 时，不再硬请求 flac 被音源静默回落（独立提交，可单独回退）。
+
+## 多架构镜像（arm64 / arm）
+
+上游 `Dockerfile` 是**单架构**构建（在容器里编译 better-sqlite3），在 x86 上直接 build 出来的镜像
+`Architecture=amd64`，拿到 ARM 机器上会报 exec format / 原生模块加载失败。
+
+本仓库额外提供**交叉装配**方式（`Dockerfile.cross` + `scripts/build-multiarch.sh`）：
+
+```bash
+# 构建 amd64 + arm64（JS 只在宿主构建一次，无需 QEMU 跑构建）
+./scripts/build-multiarch.sh amd64 arm64
+# 只出 arm64，并导出 tar 便于拷到 ARM 机器
+SAVE_DIR=./dist-images ./scripts/build-multiarch.sh arm64
+```
+
+要点：
+
+1. `build/`（JS 与前端静态文件）与架构无关，只有 `build/native/<platform>_<arch>_v11/better_sqlite3.node` 和架构相关。
+2. 各架构的原生库直接用上游 release：
+   `any-listen/any-listen-web-server-native-lib` 的 `linux_{x64,arm64,arm}_v11.tar.gz`。
+3. **这些原生库是 glibc 构建**（`NEEDED: libc.so.6 / GLIBC_2.28`），所以交叉镜像基座用
+   `node:24-bookworm-slim`（glibc），放进 alpine(musl) 会报
+   `Error relocating .../better_sqlite3.node: fcntl64: symbol not found`。
+   官方 alpine 镜像能用，是因为它在 alpine 内自己编译了 musl 版 .node。
+4. 镜像内目录必须是 `native/linux_<process.arch>_v11`（运行时按 `getNativeName()` 查找），
+   注意 x64 的资产名是 `x64` 而不是 `amd64`。
+5. uid/gid 仍是 1001，和 `userns_mode: keep-id:uid=1001,gid=1001` 兼容。
+
+ARM 机器上使用：
+
+```bash
+# 拷过去
+scp any-listen-arm64.tar.zst arm-host:/tmp/
+ssh arm-host 'zstd -d -f /tmp/any-listen-arm64.tar.zst -o /tmp/any-listen.tar && podman load -i /tmp/any-listen.tar'
+# 想保持 compose 里的 tag 不变的话
+ssh arm-host 'podman tag localhost/any-listen-web-server:download-ui-arm64 localhost/any-listen-web-server:download-ui'
+```
