@@ -1,7 +1,7 @@
 import { DOWNLOAD_STATUS } from '@any-listen/common/constants'
 import { dirname } from '@any-listen/nodejs'
 import { musicSearch } from '@any-listen/app/modules/resources'
-import { getExtSource } from '@any-listen/app/modules/resources/utils'
+import { getExtSource, getHighestQuality, pickQuality } from '@any-listen/app/modules/resources/utils'
 
 import { appState } from '@/app/app'
 import defaultSetting from '@/app/shared/defaultSetting'
@@ -65,7 +65,7 @@ const execute = async (task: DownloadTask) => {
   }
 
   try {
-    await runDownloadTask(task, task.savePath, task.requestedQuality, onProgress, onStatusText)
+    await runDownloadTask(task, task.savePath, task.effectiveQuality, onProgress, onStatusText)
     console.log(`[download] done: ${task.fileName} (${task.actualQuality || task.requestedQuality})`)
   } catch (err) {
     task.status = DOWNLOAD_STATUS.ERROR
@@ -174,14 +174,19 @@ export const addDownloadTask = async (
     if (!musicInfo) throw new Error(`music not found: ${params.name}`)
   }
 
-  const id = `${musicInfo.id}_${quality}`
+  // auto = 按每首可用最高音质；否则按本曲 qualitys 降级（不改变 qualitys 为空时的行为）
+  const effectiveQuality = quality == 'auto' ? getHighestQuality(musicInfo) : pickQuality(musicInfo, quality)
+  const displayQuality = quality == 'auto' ? effectiveQuality : quality
+
+  const id = `${musicInfo.id}_${displayQuality}`
   const exist = tasks.get(id)
   if (exist && exist.status == DOWNLOAD_STATUS.COMPLETED) return exist
 
   const task: DownloadTask = {
     id,
     musicInfo,
-    requestedQuality: quality,
+    requestedQuality: displayQuality,
+    effectiveQuality,
     actualQuality: '',
     actualBitrate: 0,
     qualityFallback: false,
@@ -262,6 +267,7 @@ export const initDownload = async () => {
         id: item.id,
         musicInfo: item.metadata.musicInfo,
         requestedQuality: item.metadata.quality || appState.appSetting['download.quality'],
+        effectiveQuality: item.metadata.quality || appState.appSetting['download.quality'],
         actualQuality: '',
         actualBitrate: 0,
         qualityFallback: false,

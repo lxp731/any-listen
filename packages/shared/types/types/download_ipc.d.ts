@@ -4,8 +4,10 @@ declare namespace AnyListen {
     interface TaskInfo {
       id: string
       musicInfo: Music.MusicInfoOnline
-      /** 请求的音质 */
+      /** 用户请求的音质 */
       requestedQuality: string
+      /** 按本曲可用音质降级后实际请求的音质 */
+      effectiveQuality: string
       /** 实测音质描述，如 `MPEG 1 Layer 3 320k` */
       actualQuality: string
       /** 实测码率 kbps */

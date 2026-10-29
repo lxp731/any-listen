@@ -23,8 +23,10 @@ export interface ProbeResult {
 export interface DownloadTask {
   id: string
   musicInfo: AnyListen.Music.MusicInfoOnline
-  /** 请求的音质 */
+  /** 用户请求的音质（可能是 auto） */
   requestedQuality: string
+  /** 按本曲可用音质降级后，真正去请求的音质 */
+  effectiveQuality: string
   /** 音源实际给出的音质 */
   actualQuality: string
   /** 实测码率（kbps） */

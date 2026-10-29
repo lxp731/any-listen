@@ -15,6 +15,7 @@ const toTaskInfo = (task: DownloadTask): AnyListen.IPCDownload.TaskInfo => ({
   id: task.id,
   musicInfo: task.musicInfo,
   requestedQuality: task.requestedQuality,
+  effectiveQuality: task.effectiveQuality,
   actualQuality: task.actualQuality,
   actualBitrate: task.actualBitrate,
   qualityFallback: task.qualityFallback,
