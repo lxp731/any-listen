@@ -1,7 +1,7 @@
 import { mount, tick, unmount } from 'svelte'
 
 import { onDesconnected } from '@/modules/app/shared'
-import { t } from '@/plugins/i18n'
+import { i18n } from '@/plugins/i18n'
 import { downloadAdd } from '@/shared/ipc/download'
 import { showNotify } from '@/components/apis/notify'
 
@@ -11,7 +11,7 @@ import { showNotify } from '@/components/apis/notify'
 export const showDownloadModal = async (musicInfos: AnyListen.Music.MusicInfo[]) => {
   const onlineList = musicInfos.filter((info): info is AnyListen.Music.MusicInfoOnline => !info.isLocal)
   if (!onlineList.length) {
-    showNotify(t('download_modal.local_not_supported'))
+    showNotify(i18n.t('download_modal.local_not_supported'))
     return
   }
 
@@ -37,7 +37,7 @@ export const showDownloadModal = async (musicInfos: AnyListen.Music.MusicInfo[])
 
   try {
     const tasks = await downloadAdd({ musicInfos: onlineList, quality })
-    showNotify(t('download_modal.added', { num: tasks.length }))
+    showNotify(i18n.t('download_modal.added', { num: tasks.length }))
   } catch (err) {
     showNotify((err as Error).message)
   }

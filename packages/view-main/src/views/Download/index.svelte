@@ -2,7 +2,7 @@
   import { onDestroy, onMount } from 'svelte'
 
   import Btn from '@/components/base/Btn.svelte'
-  import { t } from '@/plugins/i18n'
+  import { i18n } from '@/plugins/i18n'
   import { downloadClear, downloadRemove, downloadTasks } from '@/shared/ipc/download'
   import { showNotify } from '@/components/apis/notify'
   import { showSimpleConfirmModal } from '@/components/apis/dialog'
@@ -44,22 +44,22 @@
   const statusLabel = (status: AnyListen.Download.DownloadTaskStatus) => {
     switch (status) {
       case 'run':
-        return t('download_status_run')
+        return i18n.t('download_status_run')
       case 'waiting':
-        return t('download_status_waiting')
+        return i18n.t('download_status_waiting')
       case 'pause':
-        return t('download_status_pause')
+        return i18n.t('download_status_pause')
       case 'error':
-        return t('download_status_error')
+        return i18n.t('download_status_error')
       case 'completed':
-        return t('download_status_completed')
+        return i18n.t('download_status_completed')
       default:
         return status
     }
   }
 
   const handleRemove = async (task: AnyListen.IPCDownload.TaskInfo) => {
-    const ok = await showSimpleConfirmModal(t('download_tip_remove_tip', { name: task.musicInfo.name }))
+    const ok = await showSimpleConfirmModal(i18n.t('download_tip_remove_tip', { name: task.musicInfo.name }))
     if (!ok) return
     await downloadRemove([task.id])
     tasks = tasks.filter((item) => item.id != task.id)
@@ -67,11 +67,11 @@
 
   const handleClear = async () => {
     if (!tasks.length) return
-    const ok = await showSimpleConfirmModal(t('download_tip_clear_tip'))
+    const ok = await showSimpleConfirmModal(i18n.t('download_tip_clear_tip'))
     if (!ok) return
     await downloadClear()
     tasks = []
-    showNotify(t('download_clear_success'))
+    showNotify(i18n.t('download_clear_success'))
   }
 </script>
 
