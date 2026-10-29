@@ -37,6 +37,7 @@
   <span style="width: 22%;">{$t('music_singer')}</span>
   <span style="width: 22%;">{$t('music_album')}</span>
   <span style="width: 9%;">{$t('music_time')}</span>
+  <span class="action-header">{$t('action')}</span>
 </div>
 
 <style lang="less">
@@ -55,6 +56,10 @@
     :global(.checkbox) {
       font-size: 14px;
     }
+  }
+  .action-header {
+    flex: 0 0 66px;
+    text-align: right;
   }
   .num {
     .nobreak();

@@ -6,7 +6,8 @@ import { getExtSource } from '@any-listen/app/modules/resources/utils'
 import { appState } from '@/app/app'
 import { workers } from '@/app/worker'
 
-import { runDownloadTask } from './service'
+import { probeAudioFile } from './probe'
+import { detectExt, isQualityFallback, runDownloadTask } from './service'
 import type { DownloadOptions, DownloadTask, SearchMusicParams } from './types'
 
 const DEFAULT_SOURCES = ['kw', 'tx', 'wy', 'kg', 'mg']
@@ -209,6 +210,18 @@ export const addDownloadTask = async (
   return task
 }
 
+/** 批量添加下载任务（前端多选下载用） */
+export const addDownloadTasks = async (
+  musicInfos: AnyListen.Music.MusicInfoOnline[],
+  options: DownloadOptions = {}
+) => {
+  const list: DownloadTask[] = []
+  for (const musicInfo of musicInfos) {
+    list.push(await addDownloadTask({ musicInfo }, options))
+  }
+  return list
+}
+
 export const removeDownloadTask = async (id: string) => {
   const task = tasks.get(id)
   if (!task) return false
@@ -266,6 +279,17 @@ export const initDownload = async () => {
         createdAt: 0,
         updatedAt: 0,
       })
+    }
+    // 恢复后重新探测已完成任务的真实音质，避免界面显示"请求值"
+    for (const task of tasks.values()) {
+      if (task.status != DOWNLOAD_STATUS.COMPLETED || !task.filePath) continue
+      const probe = await probeAudioFile(task.filePath)
+      if (!probe) continue
+      task.actualBitrate = probe.bitrate
+      task.actualQuality = `${probe.codec || probe.container} ${probe.bitrate}k`.trim()
+      task.qualityFallback = isQualityFallback(task.requestedQuality, probe)
+      const ext = detectExt(probe)
+      if (ext) task.ext = ext
     }
     console.log(`[download] module ready, restored ${list.length} task(s)`)
   } catch (err) {

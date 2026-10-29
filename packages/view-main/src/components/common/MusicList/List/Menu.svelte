@@ -8,8 +8,10 @@
   import { showMusicAddModal } from '@/components/apis/musicAddModal'
   import { showMusicCommentModal } from '@/components/apis/musicCommentModal'
   import { appState } from '@/modules/app/store/state'
+  import { settingState } from '@/modules/setting/store/state'
   import { showMusicToggleModal } from './components/MusicToggleModal'
   import { showMusicSortModal } from './components/MusicSortModal'
+  import { showDownloadModal } from '@/components/common/DownloadModal'
 
   type ListType = 'default' | AnyListen.List.UserListType
   let {
@@ -61,7 +63,7 @@
       { action: 'play', label: $t('user_list_music_menu__play') },
       { action: 'playLater', label: $t('user_list_music_menu__play_later') },
       null,
-      // { action: 'download', label: $t('user_list_music_menu__download') },
+      !local && settingState.setting['download.enable'] && { action: 'download', label: $t('user_list_music_menu__download') },
       { action: 'addTo', label: $t('user_list_music_menu__add_to') },
       local && !localList && { action: 'moveTo', label: $t('user_list_music_menu__move_to') },
       local && { action: 'sort', label: $t('user_list_music_menu__sort') },
@@ -113,6 +115,11 @@
           selectInfo.onRemoveAllSelected
         )
         break
+      case 'download': {
+        const musics = selectInfo.selectedList.length ? selectInfo.selectedList : [selectInfo.musicInfo]
+        void showDownloadModal(musics)
+        break
+      }
       case 'addTo':
         void showMusicAddModal(
           false,

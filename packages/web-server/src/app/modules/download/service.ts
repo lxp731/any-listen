@@ -194,6 +194,12 @@ export const runDownloadTask = async (
   await removeFileIgnoreError(task.filePath)
   await renamePath(tempPath, task.filePath)
 
+  // 严格模式：不接受码率回落时直接判定失败，避免库里出现"标称高音质实际低码率"
+  if (task.qualityFallback && !setting['download.acceptFallbackQuality']) {
+    await removeFileIgnoreError(task.filePath)
+    throw new Error(`实际码率 ${task.actualBitrate}k 低于请求音质 ${quality}（可在设置里允许码率回落）`)
+  }
+
   // 歌词
   let lyricText = ''
   if (setting['download.isDownloadLrc'] || setting['download.isEmbedLyric']) {

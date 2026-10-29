@@ -5,6 +5,7 @@ import { createClientApp, createExposeApp } from './app'
 import { createClientData } from './data'
 import { createClientDesktopLyric } from './desktopLyric'
 import { createClientDislike, createExposeDislike } from './dislike'
+import { createClientDownload } from './download'
 import { createClientExtension, createExposeExtension } from './extension'
 import { createClientHotkey, createExposeHotkey } from './hotkey'
 import { createClientList, createExposeList } from './list'
@@ -75,6 +76,7 @@ const connectIPCService: AnyListen.IPC.ConnectIPCSrivice = ({
         ...createClientSoundEffect(ipcSocket),
         ...createClientDesktopLyric(ipcSocket),
         ...createClientSync(ipcSocket),
+        ...createClientDownload(ipcSocket),
       }
       onConnected(ipc as AnyListen.IPC.ServerIPC)
     },
