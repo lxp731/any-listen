@@ -109,3 +109,18 @@ packages/shared/types/types/app_setting.d.ts         对应类型
 packages/shared/app/modules/worker/dbService/modules/download/statements.ts  修正列名 + 补充更新字段
 packages/web-server/package.json                     新增 node-id3 / iconv-lite / music-metadata
 ```
+
+## 阶段二（已实现）：前端整合
+
+| 位置 | 说明 |
+|---|---|
+| 歌曲列表「操作」列 | 播放 + 下载两个图标（复用 `components/layout/Icons.svelte` 里 desktop 的 `#icon-testPlay` / `#icon-download`），点击即可下载，不再需要右键 |
+| 右键菜单 | 保留「下载」项（支持多选后批量下载） |
+| 下载弹窗 | `components/common/DownloadModal`，选音质后加入队列（默认取设置里的音质） |
+| 下载页 `/download` | 任务列表：进度条、状态、实测码率、`码率回落` 标记、移除/清空（1.5s 轮询） |
+| 设置页「下载」分组 | 开关、目录、默认音质、并发数、`.lrc`、编码、内嵌歌词、内嵌封面、跳过已存在、接受回落 |
+| IPC | `downloadSearch / downloadAdd / downloadTasks / downloadRemove / downloadClear / downloadQualitys` |
+
+注意：设置页的 `selection` 类型不会自动翻译 `enum.name`（上游行为），因此这些枚举项用 `i18n.t()` 预先翻译。
+
+前端进度采用**轮询**（1.5s）而不是 websocket 推送：实现简单、无事件通道改动；任务数少（并发 ≤5）时开销可忽略。
