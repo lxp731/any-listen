@@ -2,7 +2,7 @@
   import { onDestroy, onMount } from 'svelte'
 
   import Btn from '@/components/base/Btn.svelte'
-  import { i18n } from '@/plugins/i18n'
+  import { i18n, t } from '@/plugins/i18n'
   import { downloadClear, downloadRemove, downloadTasks } from '@/shared/ipc/download'
   import { showNotify } from '@/components/apis/notify'
   import { showSimpleConfirmModal } from '@/components/apis/dialog'
