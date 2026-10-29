@@ -124,3 +124,11 @@ packages/web-server/package.json                     新增 node-id3 / iconv-lit
 注意：设置页的 `selection` 类型不会自动翻译 `enum.name`（上游行为），因此这些枚举项用 `i18n.t()` 预先翻译。
 
 前端进度采用**轮询**（1.5s）而不是 websocket 推送：实现简单、无事件通道改动；任务数少（并发 ≤5）时开销可忽略。
+
+## 前端容易踩的坑（补充）
+
+- **`t` 是 Svelte store，不是函数**：`import { t } from '@/plugins/i18n'` 之后只能在 `.svelte` 模板/`<script>` 里用 `$t(...)`；
+  在纯 `.ts` 文件里必须 `import { i18n }` 然后 `i18n.t(...)`。
+  写成 `t('key')` 会抛 `t is not a function`（生产构建压缩后显示为 `G is not a function`）。
+  `.svelte` 文件里两种都要导入：`import { i18n, t } from '@/plugins/i18n'`（`t` 供 `$t` 用，`i18n` 供脚本里用），
+  漏了 `t` 会构建报 `` `$t` is an illegal variable name ``。
