@@ -7,7 +7,7 @@ import type { ProbeResult } from './types'
  * 音源扩展返回的 quality 字段不可信（实测请求 flac/320k 常回落 mp3 128k），
  * 所以下载完成后必须以实测码率为准。
  */
-export const probeAudioFile = async (filePath: string): Promise<ProbeResult | null> => {
+export const probeAudioFile = async (filePath: string, silent = false): Promise<ProbeResult | null> => {
   try {
     // 与 @any-listen/nodejs 保持一致，使用动态导入（music-metadata 为 ESM 包）
     const { parseFile } = await import('music-metadata')
@@ -23,7 +23,7 @@ export const probeAudioFile = async (filePath: string): Promise<ProbeResult | nu
       size: stats?.size ?? 0,
     }
   } catch (err) {
-    console.log('[download] probe failed:', filePath, (err as Error).message)
+    if (!silent) console.log('[download] probe failed:', filePath, (err as Error).message)
     return null
   }
 }

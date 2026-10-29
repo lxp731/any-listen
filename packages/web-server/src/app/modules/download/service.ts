@@ -142,33 +142,53 @@ export const runDownloadTask = async (
   }
   await removeFileIgnoreError(tempPath)
 
-  // 取链
+  // 取链：下载一律取新链接。music_url 表里的缓存没有时间戳，
+  // 复用播放缓存里的旧链接会稳定 404（每首白跑一次请求）
   onStatusText('获取歌曲链接...')
-  let urlInfo: AnyListen.IPCMusic.MusicUrlInfo
-  try {
-    urlInfo = await getMusicUrl({ musicInfo: task.musicInfo, quality, isRefresh: false })
-  } catch (err) {
-    urlInfo = await getMusicUrl({ musicInfo: task.musicInfo, quality, isRefresh: true })
-  }
+  const urlInfo = await getMusicUrl({ musicInfo: task.musicInfo, quality, isRefresh: true })
   if (!urlInfo.url) throw new Error('get music url failed')
   task.actualQuality = urlInfo.quality || quality
 
   const useProxy =
     appState.proxy.host && appState.proxy.port ? { host: appState.proxy.host, port: appState.proxy.port } : null
 
+  // 下载中提前探测真实码率：不必等整首下完就能告诉用户"音源实际只给 128k"
+  const MID_PROBE_THRESHOLDS = [1_500_000, 3_000_000, 6_000_000]
+  let midProbeIndex = 0
+  let midProbed = false
+  const handleProgress = (progress: AnyListen.Download.ProgressInfo) => {
+    onProgress(progress)
+    if (midProbed || midProbeIndex >= MID_PROBE_THRESHOLDS.length) return
+    if (progress.downloaded < MID_PROBE_THRESHOLDS[midProbeIndex]) return
+    const attempt = midProbeIndex++
+    void probeAudioFile(tempPath, true).then((probe) => {
+      if (!probe?.bitrate) return // 文件还在写，下一个阈值再试
+      midProbed = true
+      task.actualBitrate = probe.bitrate
+      task.actualQuality = `${probe.codec || probe.container} ${probe.bitrate}k`.trim()
+      task.qualityFallback = isQualityFallback(quality, probe)
+      onStatusText(
+        task.qualityFallback
+          ? `下载中（音源实际 ${probe.bitrate}k${probe.lossless ? '' : '，码率回落'}）`
+          : `下载中（实际 ${probe.bitrate}k）`
+      )
+    })
+  }
+
   // 下载（链接失效时刷新一次重试）
   onStatusText('下载中...')
   let source = resolveDownloadSource(urlInfo.url)
   try {
-    await downloadFile(source, tempPath, useProxy, onProgress)
+    await downloadFile(source, tempPath, useProxy, handleProgress)
   } catch (err) {
     const message = (err as Error).message ?? ''
+    console.log(`[download] first attempt failed: ${message}`)
     if (/request failed|ENOTFOUND|ECONNRESET|socket hang up|403|410|401/i.test(message)) {
       onStatusText('链接失效，刷新重试...')
       const refreshed = await getMusicUrl({ musicInfo: task.musicInfo, quality, isRefresh: true })
       task.actualQuality = refreshed.quality || quality
       source = resolveDownloadSource(refreshed.url)
-      await downloadFile(source, tempPath, useProxy, onProgress)
+      await downloadFile(source, tempPath, useProxy, handleProgress)
     } else {
       throw err
     }
