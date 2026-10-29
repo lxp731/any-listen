@@ -132,3 +132,51 @@ packages/web-server/package.json                     新增 node-id3 / iconv-lit
   写成 `t('key')` 会抛 `t is not a function`（生产构建压缩后显示为 `G is not a function`）。
   `.svelte` 文件里两种都要导入：`import { i18n, t } from '@/plugins/i18n'`（`t` 供 `$t` 用，`i18n` 供脚本里用），
   漏了 `t` 会构建报 `` `$t` is an illegal variable name ``。
+
+## 音质选择：按 `meta.qualitys` 逐首降级（对齐桌面版思路）
+
+### 数据来源
+
+搜索/详情接口返回的每条歌自带 `meta.qualitys`（`{ flac: { sizeStr }, '320k': { sizeStr }, ... }`），
+**不需要额外请求**。桌面版用的是 `_qualitys` 布尔表 + `qualityList[source]`；网页版统一用 `qualitys`，
+"源是否支持某音质"由扩展清单（谁声明 `musicUrl`）决定。
+
+### 选择规则（`shared/app/modules/resources/utils.ts` → `pickQuality`）
+
+1. 本曲有请求的档 → 用它
+2. 否则取「低于请求档里最高的一档」
+3. 再否则取「高于请求档里最低的一档」
+4. `qualitys` 为空（本地曲目/老数据/扩展未提供）→ 原样返回，行为与没有该逻辑时一致
+
+任务里区分三个值：`requestedQuality`（用户选的）/ `effectiveQuality`（按本曲降级后实际请求的）/ `actualQuality`（下载后实测的）。
+`quality='auto'` 表示按每首可用最高（批量下载用，见 `getHighestQuality`）。
+
+### 前端
+
+- 单曲弹窗：只列本曲可用档位，显示 `档位名 + 文件大小`（`无损 FLAC 26.62MB` / `高品质 320K 9.89MB` / `普通 128K 3.96MB`）
+- 多选弹窗：顶部「自动（每首可用最高）」，其余档位显示 `n/m 首支持`，全不支持置灰
+- `qualitys` 缺失 → 退回全量档位并提示
+
+### 实测（重要）
+
+`qualitys` 是"平台宣称"，不等于音源脚本能拿到：
+
+```
+江南/kg : qualitys = 128k/320k/flac/flac24bit；请求 flac24bit → 降级后请求 flac → 实测 mp3 128k（回落）
+茉莉雨/wy: qualitys = flac/320k/128k；请求 flac24bit → 降级 flac → 实测 128k（回落）
+富士山下/kw: 请求 320k → 实测真 320k
+```
+
+所以仍**保留实测码率 + `码率回落` 标记**，并在下载过程中提前探测（越过 1.5/3/6MB 时静默探一次），
+大文件不必等整首下完就能看到实际码率。
+
+### 顺带修掉的一个真 bug
+
+下载取链改为**一律 `isRefresh: true`**：`music_url` 表里的缓存没有时间戳，
+复用播放缓存中的旧链接会稳定 404，之前每首歌都白跑一次失败请求
+（服务端日志 `first attempt failed: request failed: 404 Not Found`）。
+
+### 播放链路同步修正
+
+`web-server/src/app/modules/music/online.ts` 的 `getMusicUrl` / `getMusicUrlByExtSource` 也套用 `pickQuality`：
+设置里选 flac、而本曲只有 320k 时，不再硬请求 flac 被音源静默回落（独立提交，可单独回退）。
