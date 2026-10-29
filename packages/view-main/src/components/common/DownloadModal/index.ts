@@ -30,7 +30,7 @@ export const showDownloadModal = async (musicInfos: AnyListen.Music.MusicInfo[])
   }
   const unsub = onDesconnected(release)
   await tick()
-  const quality = await (app.show(onlineList.length) as Promise<string | null>).finally(() => {
+  const quality = await (app.show(onlineList) as Promise<string | null>).finally(() => {
     unsub()
   })
   if (!quality) return
